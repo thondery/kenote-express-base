@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>{{ statusName }}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html {
+      box-sizing: border-box;
+      height: 100%;
+    }
+    body {
+      margin: 0;
+      height: inherit;
+    }
+    .wrapper {
+      height: inherit;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .page-not-found {
+      font-family: -apple-system,BlinkMacSystemFont,Roboto,Segoe UI,Fira Sans,Avenir,Helvetica Neue,Lucida Grande,sans-serif;
+    }
+    .page-not-found h1 {
+      display: inline-block;
+      border-right: 1px solid rgba(0,0,0,.3);
+      margin: 0;
+      margin-right: 20px;
+      padding: 10px 23px 10px 0;
+      font-size: 24px;
+      font-weight: 500;
+      vertical-align: top;
+    }
+    .page-not-found div {
+      display: inline-block;
+      text-align: left;
+      line-height: 49px;
+      height: 49px;
+      vertical-align: middle;
+    }
+    .page-not-found div h2 {
+      font-size: 14px;
+      font-weight: 400;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="page-not-found">
+      <h1>{{ statusCode }}</h1>
+      <div>
+        <h2>{{ statusMessage }}</h2>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
