@@ -39,8 +39,8 @@ app.use(compress())
 app.use(express.static(staticDir))
 
 // Routers
+app.use('api/v1', cors(), require('./routers/api_v1'))
 app.use('/', require('./routers/default'))
-app.use('/api/v1', cors(), require('./routers/api_v1'))
 
 // 404 Not Found
 app.use('*', (req, res) => {
