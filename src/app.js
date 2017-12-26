@@ -7,6 +7,9 @@ const nunjucks = require('nunjucks')
 const bodyParser = require('body-parser')
 const methodOverride = require('method-override')
 const compress = require('compression')
+const cookieParser = require('cookie-parser')
+const session = require('express-session')
+const RedisStore = require('connect-redis')(session)
 const cors = require('cors')
 const errorhandler = require('errorhandler')
 const config = require('./config')
@@ -28,12 +31,28 @@ nunjucks.configure('views', {
 
 // POST
 app.use(bodyParser.json({ limit: '1mb' }))
-app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }))
+app.use(bodyParser.urlencoded({ extended: true, limit: '1mb' }))
 app.use(methodOverride())
+
+// cookie
+app.use(cookieParser(config.session_secret))
 
 // Middlewares
 //app.use(res_api)
 app.use(compress())
+
+// Session
+const { redis } = config
+app.use(session({
+  secret: config.session_secret,
+  store: new RedisStore({
+    port: redis.port,
+    host: redis.host,
+    pass: redis.pass || ''
+  }),
+  resave: true,
+  saveUninitialized: true
+}))
 
 // Static
 app.use(express.static(staticDir))

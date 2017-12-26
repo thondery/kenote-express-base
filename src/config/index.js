@@ -10,5 +10,7 @@ module.exports = {
     logFile: 'access.log',
     maxLogSize: 10 * 1024 * 1024
   },
+  session_secret: 'kenote_secret',
+  site_name: 'Kenote Express',
   ...kenote,
 }
