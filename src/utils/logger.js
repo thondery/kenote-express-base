@@ -1,9 +1,10 @@
-const path = require('path')
-const fs = require('fs-extra')
-const log4js = require('log4js')
-const { logger } = require('../config')
-const { logPath, logFile, maxLogSize, category } = logger
 
+import path from 'path'
+import fs from 'fs-extra'
+import log4js from 'log4js'
+import { logger } from '../config'
+
+const { logPath, logFile, maxLogSize, category } = logger
 !fs.existsSync(logPath) && fs.mkdirpSync(logPath)
 
 log4js.configure({
@@ -28,4 +29,4 @@ log4js.configure({
   }
 })
 
-module.exports = log4js.getLogger(category)
+export default log4js.getLogger(category)

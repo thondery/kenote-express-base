@@ -3,7 +3,7 @@ module.exports = {
   apps : [
     {
       name: 'kenote-express-app',
-      script: './src/app.js',
+      script: './build/main.js',
       watch: true,
       max_memory_restart: '300M',
       interpreter_args: '--harmony',

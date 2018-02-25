@@ -35,9 +35,11 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+build/
 logger/
 public/
-scope.ini
+uploadfile/
+kenote.ini
 
 # Typescript v1 declaration files
 typings/

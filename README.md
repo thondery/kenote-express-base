@@ -1,94 +1,129 @@
 # kenote-express-base
 
-express base for kenote
+基于 `Express` 的基础服务
 
+### 安装及使用
 
-### Configure
+安装所有依赖包，生产环境需加 `--production` 标签
 
-`kenote.ini`
+```bash
+$ yarn install
+```
+
+编译代码
+
+```bash
+$ yarn build
+```
+
+初始化数据
+
+```bash
+$ yarn initialize
+```
+
+系统开发
+
+```
+$ yarn dev
+```
+
+### 生产环境
+
+创建服务器配置文件 `kenote.ini`
 
 ```ini
-; Configure hosts
+; Configure Production
 
-[localhost]
 HOST = 0.0.0.0
 PORT = 4000
 
-[intranet]
-HOST = 0.0.0.0
-PORT = 4001
+site_name = Kenote
+site_url = http://0.0.0.0:4000
+session_secret = kenote_secret
 
-[aliyun]
-HOST = 0.0.0.0
-PORT = 4002
+; 设置 MongoDB
+[mongo]
+uri = mongodb://user:password@localhost:27017/kenote
 
-; Configure Admin
-[localhost.admin]
-username = admin
-password = admin888
-
-[intranet.admin]
-username = admin
-password = admin888
-
-[aliyun.admin]
-username = admin
-password = admin888
-
-; Configure MongoDB
-[localhost.mongo]
-uri = mongodb://localhost:27017/kenote_express
-perfix = kenote_
-
-[intranet.mongo]
-uri = mongodb://localhost:27017/kenote_express
-perfix = kenote_
-
-[aliyun.mongo]
-uri = mongodb://admin:password@localhost:27017/kenote_express
-perfix = kenote_
-
-; Configure Redis
-[localhost.redis]
+; 设置 Redis
+[redis]
 host = 127.0.0.1
 port = 6379
-
-[intranet.redis]
-host = 127.0.0.1
-port = 6379
-
-[aliyun.redis]
-host = 127.0.0.1
-port = 6379
+db = 0
 pass = password
 
-; Configure Mailer
-[localhost.mailer]
+; 设置 Mailer
+[mailer]
 host = smtp.mxhichina.com
 port = 25
-[localhost.mailer.auth]
+
+[mailer.auth]
 user = user@mxhichina.com
 pass = password
 
-[intranet.mailer]
-host = smtp.mxhichina.com
-port = 25
-[intranet.mailer.auth]
-user = user@mxhichina.com
-pass = password
+; 设置七牛CND资源
+[store.cdn]
+store = qn
+mime_type[] = image/png
+mime_type[] = image/gif
+mime_type[] = image/svg
+max_size = 8MB
 
-[aliyun.mailer]
-host = smtp.mxhichina.com
-port = 25
-[aliyun.mailer.auth]
-user = user@mxhichina.com
-pass = password
+[store.cdn.store_opts]
+bucket = cdn-name
+origin = http://cdn.youdomain.com
+uploadURL = http://up-z0.qiniu.com
+
+[store.cdn.store_opts.qn_access]
+accessKey = your_accessKey
+secretKey = your_secretKey
+
+; 设置图片水印
+[drawText]
+color = '#ffffff'
+font = 'Comic Sans MS'
+size = 14
+text = @kenote
+gravity = SouthEast
 ```
 
-`scope.ini`
+配置PM2文件 `ecosystem.config.js`
 
-```ini
-; Configure scope
+```js
+// PM2 Configure
+module.exports = {
+  apps : [
+    {
+      name: 'app-name',
+      script: './build/main.js',
+      watch: true,
+      max_memory_restart: '300M',
+      interpreter_args: '--harmony',
+      instances: 1,
+      exec_mode: 'cluster',
+      env: {
+        NODE_ENV: 'production'
+      }
+    }
+  ]
+}
+```
 
-scope = aliyun
+编译服务器代码
+
+```bash
+$ yarn build:pro
+```
+
+初始化数据
+
+```bash
+$ yarn initialize
+```
+
+启动PM2服务
+
+```bash
+$ yarn start
 ```

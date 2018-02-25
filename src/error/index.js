@@ -1,25 +1,32 @@
-const _ = require('lodash')
-const Code = require('./code')
-const Message = require('./message')
 
-const errors = []
-for (let e in Code) {
-  errors.push({
-    code: Code[e],
-    message: Message[e]
-  })
-}
+import _ from 'lodash'
+import util from 'util'
+import * as Code from './code'
+import * as Message from './message'
+import { loadError } from '../utils'
 
-exports.default = errors
+const errors = loadError(Code, Message)
 
-exports.CODE = Code
+export default errors
 
-exports.ErrorInfo = (code, json = false) => {
-  const info = _.find(errors, { code })
+export const CODE = Code
+
+export const ErrorInfo = (code, opts = null, json = false) => {
+  let info = { code }
+  for (let e in Code) {
+    if (Code[e] === code) {
+      info['message'] = Message[e]
+      break
+    }
+  }
+  if (info && _.isArray(opts)) {
+    opts.splice(0, 0, info['message'])
+    info['message'] = util.format(...opts)
+  }
   if (json) return info
   const error = new Error(info.message)
   error.code = info.code
   return error
 }
 
-exports.CustomError = e => e.code >= 1000
+export const CustomError = e => e.code >= 1000

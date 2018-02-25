@@ -1,20 +1,21 @@
-const mailer = require('nodemailer')
-const smtpTransport = require('nodemailer-smtp-transport')
-const util = require('util')
-const path = require('path')
-const fs = require('fs-extra')
-const async = require('async')
-const html2text = require('html-to-text')
-const nunjucks = require('nunjucks')
-const config = require('../config')
-const logger = require('./logger')
 
-const mailOpts = smtpTransport(config.mailer)
-const transports = mailer.createTransport(mailOpts)
-const mailFrom = util.format('%s <%s>', `${config.site_name}服务`, config.mailer.auth.user)
-const templateDir = path.resolve(process.cwd(), 'mails')
+import path from 'path'
+import fs from 'fs-extra'
+import nodemailer from 'nodemailer'
+import smtpTransport from 'nodemailer-smtp-transport'
+import async from 'async'
+import html2text from 'html-to-text'
+import nunjucks from 'nunjucks'
+import { mjml2html } from 'mjml'
+import { mailer, site_name } from '../config'
+import logger from './logger'
 
-/*
+const mailOpts = smtpTransport(mailer)
+const transports = nodemailer.createTransport(mailOpts)
+const mailDir = path.resolve(process.cwd(), 'mails')
+const mailFrom = `${site_name}服务 <${mailer.auth.user}>`
+
+/** 
  * 发送邮件选项
  * @ from -- 发件人
  *   格式 -- 发件人名称 <发件人邮箱地址>
@@ -45,47 +46,45 @@ const templateDir = path.resolve(process.cwd(), 'mails')
  *       cid: '00000002'
  *     }
  *   ]
- */
+ **/
 
-exports.sendMail = data => {
-  let _data = { from: mailFrom, ...data }
-  async.retry({ times: 5, interval: 200 }, done => {
-    transports.sendMail(_data, err => {
+export const renderString = (mailFile, options = null) => {
+  let extname = path.extname(mailFile)
+  let mjmlFile = path.resolve(mailDir, mailFile)
+  let tplString = ''
+  try {
+    let mjnlString = fs.readFileSync(mjmlFile, 'utf-8')
+    tplString = /\.(mjml)/.test(extname) ? mjml2html(mjnlString).html : mjnlString
+  } catch (error) {
+    logger.error(error)
+  }
+  let htmlString = options ? nunjucks.renderString(tplString, options) : tplString
+  return htmlString
+}
+
+export const asyncSend = (data) => {
+  let options = { times: 5, interval: 200 }
+  data = {
+    from: mailFrom,
+    ...data
+  }
+  async.retry(options, done => {
+    transports.sendMail(data, err => {
       if (err) {
-        logger.error('send mail error', err, _data) 
+        logger.error('Send Mail Error', err, data) 
       }
       return done()
     })
   }, err => {
     if (err) {
-      return logger.error('send mail finally error', err, _data) 
+      return logger.error('Send Mail Finally Error', err, data) 
     }
-    logger.info('send mail success', _data)
+    logger.info('Send Mail Success', data)
   })
 }
 
-exports.sendTplMail = (data, tplFile, opts = {}) => {
-  let tpl = fs.readFileSync(path.resolve(templateDir, `${tplFile}`), 'utf-8')
-  let html = nunjucks.renderString(tpl, opts)
+export const sendMjml = (mjml, data, opts = null) => {
+  let html = renderString(mjml, opts)
   let text = html2text.fromString(html)
-  exports.sendMail({ ...data, text, html})
+  asyncSend({ ...data, html, text })
 }
-
-/*
-exports.sendTplMail({
-  to: 'thondery@163.com',
-  subject: '验证码测试',
-  attachments: [
-    {
-      filename: 'README.md',
-      path: path.resolve(process.cwd(), 'README.md'),
-      cid: '00000001'
-    },
-    {
-      filename: 'test.md',
-      content: '发送内容',
-      cid: '00000002'
-    },
-  ]
-}, 'captcha.html', { type_name: '登录操作', captcha: 1000 })
-*/

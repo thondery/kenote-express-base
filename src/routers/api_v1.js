@@ -1,9 +1,8 @@
 
-const express = require('express')
+import express from 'express'
+
 const router = express.Router()
 
-router.get ( '/', (req, res, next) => {
-  res.send('api_v1')
-})
+router.get('/test', (req, res, next) => res.api(null, 0))
 
-module.exports = router
+export default router

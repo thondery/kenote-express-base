@@ -1,9 +1,13 @@
 
-const express = require('express')
+import express from 'express'
+import * as auth from '../middlewares/auth'
+import * as store from '../controller/store'
+
 const router = express.Router()
 
-router.get ( '/', (req, res, next) => {
-  res.send('default')
-})
+router.post('/upload', auth.uploadUser, store.upload)
+router.post('/upload/:type', auth.uploadUser, store.upload)
 
-module.exports = router
+router.get('/uploadfile/:type/:filename', auth.downloadUser, store.dowload)
+
+export default router

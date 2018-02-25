@@ -1,9 +1,11 @@
-// Group
+// Upload
 import Promise from 'bluebird'
-import { groupDao as Dao } from '../models'
+import moment from 'moment'
+import _ from 'lodash'
+import { uploadDao as Dao } from '../models'
 import { addAndUpdateKeys, updateLastKeys } from './seq'
-import { isMaster } from '../middlewares/auth'
 import { CODE, ErrorInfo } from '../error'
+import { store } from '../config'
 import { callback } from '../utils'
 
 const create = info => {
@@ -71,17 +73,52 @@ const dropAllIndexes = () => {
 
 export const clear = () => removeAll().then(dropAllIndexes)
 
-export const createGroup = info => {
-  let start = () => new Promise((resolve, reject) => resolve(0))
-  if (isMaster(info.level)) {
-    start = () => counts({ level: info.level })
-  }
-  return start()
-    .then( ret => {
-      if (ret > 0) {
-        throw ErrorInfo(CODE.ERROR_GROUP_MASTER_ONLY)
-      }
-      return addAndUpdateKeys('group')
-    })
+export const createStore = info => {
+  return addAndUpdateKeys('upload')
     .then( ret => create({ ...info, id: ret }))
+}
+
+export const updateStore = (_id, info) => {
+  return updateOne({ _id }, { ...info, updateAt: new Date() })
+}
+
+export const push = info => {
+  let { store_type, file_name, file_size } = info
+  let uploadStore = store[store_type]
+  return findOne({ store_type, file_name })
+    .then( ret => {
+      if (ret) {
+        return uploadStore.store === 'local' && updateStore(ret._id, { file_size })
+      }
+      else {
+        return createStore(info)
+      }
+      return ret
+    })
+}
+
+export const updateCounts = (store_type, file_name) => {
+  return new Promise((resolve, reject) => {
+    Dao.one({ store_type, file_name }, (err, doc) => {
+      if (err) {
+        reject(err)
+      }
+      else {
+        if (doc) {
+          doc.counts++
+          doc.save()
+        }
+        resolve(doc)
+      }
+    })
+  })
+}
+
+export const userTodayCounts = (user, dayString) => {
+  let inp = moment(dayString).isValid() ? dayString : undefined
+  let [ begin, end ] = [
+    moment(inp).utcOffset(8).subtract(1, 'days').format('YYYY-MM-DD'),
+    moment(inp).utcOffset(8).format('YYYY-MM-DD')
+  ]
+  return counts({ user, updateAt: { $gte: `${begin} 00:00:00`, $lt: `${end} 00:00:00` } })
 }

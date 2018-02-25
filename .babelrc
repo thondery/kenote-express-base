@@ -1,0 +1,9 @@
+{
+  "presets": [
+    "backpack-core/babel",
+    "env"
+  ],
+  "plugins": [
+    "transform-class-properties"
+  ]
+}
