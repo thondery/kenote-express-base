@@ -7,6 +7,7 @@ import { CODE, ErrorInfo } from '../error'
 import logger from '../utils/logger'
 import types from '../config/content-type'
 import * as imageUtil from '../utils/image'
+import { authUser } from './auth'
 
 export default (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -45,5 +46,7 @@ export default (req, res, next) => {
   }
   // Not Found
   res.notfound = () => res.status(404).render('error', { statusCode: 404, ...Status[404] })
+  // Auth
+  req.auth = authUser(req)
   return next()
 }

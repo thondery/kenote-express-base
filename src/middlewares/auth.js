@@ -4,10 +4,10 @@ import moment from 'moment'
 import * as userProxy from '../proxys/user'
 import * as uploadProxy from '../proxys/upload'
 import { CustomError, CODE, ErrorInfo } from '../error'
-import { store, site_url } from '../config'
+import { store, site_url, group } from '../config'
 
-export const MASTER_GROUP_NAME = '创建者'
-export const MASTER_GROUP_LEVEL = 9999
+export const MASTER_GROUP_NAME = group.name || '创建者'
+export const MASTER_GROUP_LEVEL = group.level || 9999
 
 export const isMaster = level => level === MASTER_GROUP_LEVEL
 
@@ -17,7 +17,7 @@ export const uploadUser = (req, res, next) => {
   let upload_tag = req.params.type || 'files'
   let auth = null
   let options = null
-  return userProxy.accessToken(authorization)
+  return userProxy.accessToken(req.auth.token || authorization)
     .then( ret => {
       let { upload_type, level } = ret.group
       let IsMaster = isMaster(level)
@@ -54,7 +54,7 @@ export const downloadUser = (req, res, next) => {
   if (!uploadStore.down_level) {
     return next({})
   }
-  return userProxy.accessToken(req.session.token || authorization)
+  return userProxy.accessToken(req.auth.token || authorization)
     .then( ret => {
       let { group } = ret
       if (group.level < uploadStore.down_level) {
@@ -66,3 +66,24 @@ export const downloadUser = (req, res, next) => {
     .catch( CustomError, err => res.notfound() )
     .catch( err => next(err) )
 }
+
+export const accessToken = (req, res, next) => {
+  let { authorization } = req.headers
+  return userProxy.accessToken(req.auth.token || authorization)
+    .then( ret => {
+      let { _id, username, accesskey } = ret
+      let user = {
+        ..._.pick(ret, ['_id', 'username']),
+        token: ret.accesskey
+      }
+      req.login(user, err => {
+        if (err) throw err
+        next(ret)
+        return null
+      })
+    })
+    .catch( CustomError, err => res.notfound() )
+    .catch( err => next(err) )
+}
+
+export const authUser = (req) => _.has(req.session, 'passport.user') ? req.session.passport.user : null

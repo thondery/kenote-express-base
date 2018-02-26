@@ -12,6 +12,8 @@ import session from 'express-session'
 import connectRedis from 'connect-redis'
 import cors from 'cors'
 import errorhandler from 'errorhandler'
+import passport from 'passport'
+import passportLocal from 'passport-local'
 
 import logger from './utils/logger'
 import { HOST, PORT, Status, session_secret, redis } from './config'
@@ -48,6 +50,17 @@ app.use(session({
   resave: true,
   saveUninitialized: true
 }))
+
+// oauth
+app.use(passport.initialize())
+app.use(passport.session())
+
+passport.serializeUser((user, done) => 
+  done(null, user)
+)
+passport.deserializeUser((user, done) => 
+  done(null, user)
+)
 
 // Middlewares
 app.use(restful)

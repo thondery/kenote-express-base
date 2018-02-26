@@ -109,9 +109,27 @@ export const createUser = info => {
 }
 
 export const accessToken = accesskey => {
-  return findOne({ accesskey: accesskey }, populateStore)
+  let query = { accesskey: accesskey }
+  return findOne(query, populateStore, ['_id', 'id', 'username', 'nickname', 'email', 'accesskey', 'group', 'createAt', 'updateAt'])
     .then( ret => {
       if (!ret) throw ErrorInfo(CODE.ERROR_SIGN_ACCESSTOKEN_NULL)
+      return ret
+    })
+}
+
+export const login = (info) => {
+  let { username, password } = info
+  let query = {
+    $or: [
+      { username: username },
+      { email: username }
+    ]
+  }
+  return findOne(query, populateStore)
+    .then( ret => {
+      if (!ret) throw ErrorInfo(CODE.ERROR_LOGINVALID_FAIL)
+      let valide = validPassword(password, ret.salt, ret.encrypt)
+      if (!valide) throw ErrorInfo(CODE.ERROR_LOGINVALID_FAIL)
       return _.pick(ret, ['_id', 'id', 'username', 'nickname', 'email', 'accesskey', 'group', 'createAt', 'updateAt'])
     })
 }
