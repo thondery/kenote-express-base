@@ -1,11 +1,18 @@
 <mjml>
+  <mj-head>
+    <mj-title>邮箱验证</mj-title>
+    <mj-attributes>
+      <mj-all font-size="16px" color="#797878" />
+      <mj-class name="title" font-size="20px" color="#4e9c74" font-weight="bold" />
+    <mj-attributes>
+  </mj-head>
   <mj-body>
     <mj-container background-color="#ffffff">
       <mj-section>
         <mj-column>
-          <mj-text font-size="20px" color="#4e9c74" font-weight="bold" padding-top="20px">邮箱验证</mj-text>
-          <mj-text font-size="16px" color="#797878">您好！</mj-text>
-          <mj-text font-size="16px" color="#797878">您正在进行{{ type_name }}，请在验证码输入框输入：<b>{{ captcha }}</b>，以完成操作。</mj-text>
+          <mj-text mj-class="title">邮箱验证</mj-text>
+          <mj-text>您好！</mj-text>
+          <mj-text>您正在进行{{ type_name }}，请在验证码输入框输入：<b>{{ captcha }}</b>，以完成操作。</mj-text>
         </mj-column>
       </mj-section>
     </mj-container>
